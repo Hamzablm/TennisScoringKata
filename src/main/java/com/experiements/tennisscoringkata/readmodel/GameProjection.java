@@ -7,6 +7,7 @@ import com.experiements.tennisscoringkata.model.Player;
 public final class GameProjection {
   // numeric score buckets before deuce
   private static final int[] SCORE_BUCKETS = {0, 15, 30, 40};
+  public static final int FORTY_IDX = SCORE_BUCKETS.length - 1;
 
   private int indexA = 0;
   private int indexB = 0;
@@ -42,20 +43,20 @@ public final class GameProjection {
     int idxSelf = isA ? indexA : indexB;
     int idxOther = isA ? indexB : indexA;
 
-    if (idxSelf < 3) {          // 0→15→30→40
+    if (idxSelf < FORTY_IDX) {          // 0→15→30→40
       idxSelf++;
       if (isA) indexA = idxSelf;
       else indexB = idxSelf;
 
       // if we just made it 40-40, mark deuce now
-      if (idxSelf == 3 && idxOther == 3) {
+      if (idxSelf == FORTY_IDX && idxOther == FORTY_IDX) {
         deuce = true;
       }
       return;
     }
 
     // self already at 40
-    if (idxOther < 3) {
+    if (idxOther < FORTY_IDX) {
       winner = isA ? Player.A : Player.B;  // opponent < 40 → win
     }
   }
