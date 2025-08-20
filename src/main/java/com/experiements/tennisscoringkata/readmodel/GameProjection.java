@@ -61,15 +61,7 @@ public final class GameProjection {
     }
   }
 
-  public void reset() {
-    indexA = 0;
-    indexB = 0;
-    deuce = false;
-    advantage = null;
-    winner = null;
-  }
-
-  public String render() {
+  public String renderLine() {
     if (winner != null) {
       return "Player " + winner + " wins the game";
     }

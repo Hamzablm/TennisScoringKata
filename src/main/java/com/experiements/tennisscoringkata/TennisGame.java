@@ -18,9 +18,6 @@ import java.util.List;
 public class TennisGame {
 
   private final List<Event> events = new ArrayList<>();        // the event log
-  private final GameProjection projection = new GameProjection(); // read model
-  // how many events are already reflected in the projection
-  private int applied = 0;
 
   public void play(Player p) {
     PointWon evt = new PointWon(p);
@@ -28,49 +25,44 @@ public class TennisGame {
   }
 
   public boolean finished() {
-    while (applied < events.size()) {
-      projection.apply(events.get(applied));
-      applied++;
-    }
-    if (projection.winner() != null) {
-      applied = 0;// reset how many events are already reflected in the projection
-      projection.reset();
-      return true;
-    }
-    return false;
+    var projection = fold();
+    return projection.winner() != null;
   }
 
-  public String score() {
-    StringBuilder score = new StringBuilder();
-    while (applied < events.size()) {
-      projection.apply(events.get(applied));
-      applied++;
-      score.append(projection.render());
+  public String scoreHistory() {
+    var projection = new GameProjection();
+    var scoreHistory = new StringBuilder();
+    for (var e : events) {
+      projection.apply(e);
+      scoreHistory.append(projection.renderLine());
     }
-    return score.toString();
+    return scoreHistory.toString();
   }
 
-  public List<Event> history() {
-    return List.copyOf(events);
+  private GameProjection fold() {
+    var gp = new GameProjection();
+    for (var e : events) gp.apply(e);
+    return gp;
   }
 
-  public static void main(String[] args) {
-    String sequence = args.length == 0 ? "ABABAA" : args[0].trim().toUpperCase();
-    TennisGame game = new TennisGame();
-
+  public TennisGame(String sequence) {
     for (char c : sequence.toCharArray()) {
       Player p = switch (c) {
         case 'A' -> Player.A;
         case 'B' -> Player.B;
         default -> throw new IllegalArgumentException("Only A or B allowed – found: " + c);
       };
-      game.play(p);
-      if (game.finished()) break; // ignore trailing chars once someone won
+      play(p);
+      if (finished()) break; // ignore trailing chars once someone won
     }
-
-    System.out.println(game.score());
-
   }
 
+  public static void main(String[] args) {
+    String sequence = args.length == 0 ? "ABABAA" : args[0].trim().toUpperCase();
+    TennisGame game = new TennisGame(sequence);
+
+    System.out.println(game.scoreHistory());
+
+  }
 
 }
