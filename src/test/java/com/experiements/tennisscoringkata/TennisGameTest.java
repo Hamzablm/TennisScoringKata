@@ -159,4 +159,67 @@ class TennisGameTest {
             () -> TennisGame.main(new String[]{"ABX"}));
     assertTrue(ex.getMessage().contains("Only A or B allowed"));
   }
+
+  @ParameterizedTest
+  @ValueSource(strings = {
+          "AAAA",           // exact win
+          "AAAABBB",        // valid trailing A/B
+          "AAAAXXX",        // invalid trailing chars – should be ignored because loop breaks
+          "AAAAxxxx",       // mixed-case trailing noise
+          "AAAA+++BBB"      // more trailing noise
+  })
+  @DisplayName("main(): ignores trailing chars after A wins (via finished())")
+  void main_ignores_trailing_after_A_win(String seq) {
+    String[] args = {seq};
+    PrintStream orig = System.out;
+    var baos = new ByteArrayOutputStream();
+    System.setOut(new PrintStream(baos));
+
+    try {
+      TennisGame.main(args);
+    } finally {
+      System.setOut(orig);
+    }
+
+    var output = baos.toString(StandardCharsets.UTF_8);
+
+    var expected = String.join("",
+            "Player A : 15 / Player B : 0\n",
+            "Player A : 30 / Player B : 0\n",
+            "Player A : 40 / Player B : 0\n",
+            "Player A wins the game\n"
+    );
+    assertEquals(expected, output, "main should stop processing once finished() returns true");
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {
+          "BBBB",           // exact win
+          "BBBBABA",        // valid trailing A/B
+          "BBBB###",        // invalid trailing chars , should be ignored
+          "bbbbXXXX"        // mixed-case + noise
+  })
+  @DisplayName("main(): ignores trailing chars after B wins (via finished())")
+  void main_ignores_trailing_after_B_win(String seq) {
+    String[] args = {seq};
+    PrintStream orig = System.out;
+    var baos = new ByteArrayOutputStream();
+    System.setOut(new PrintStream(baos));
+
+    try {
+      TennisGame.main(args);
+    } finally {
+      System.setOut(orig);
+    }
+
+    var output = baos.toString(StandardCharsets.UTF_8);
+
+    var expected = String.join("",
+            "Player A : 0 / Player B : 15\n",
+            "Player A : 0 / Player B : 30\n",
+            "Player A : 0 / Player B : 40\n",
+            "Player B wins the game\n"
+    );
+    assertEquals(expected, output, "main should stop processing once finished() returns true");
+  }
 }

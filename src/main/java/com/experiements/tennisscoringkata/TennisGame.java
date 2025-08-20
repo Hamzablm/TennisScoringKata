@@ -28,7 +28,16 @@ public class TennisGame {
   }
 
   public boolean finished() {
-    return projection.winner() != null;
+    while (applied < events.size()) {
+      projection.apply(events.get(applied));
+      applied++;
+    }
+    if (projection.winner() != null) {
+      applied = 0;// reset how many events are already reflected in the projection
+      projection.reset();
+      return true;
+    }
+    return false;
   }
 
   public String score() {
