@@ -20,6 +20,7 @@ public class TennisGame {
   private final List<Event> events = new ArrayList<>();        // the event log
 
   public void play(Player p) {
+    if (fold().winner() != null) throw new IllegalStateException("Game already finished");
     PointWon evt = new PointWon(p);
     events.add(evt);
   }
